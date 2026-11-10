@@ -1,0 +1,19 @@
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Mission {
+  id         Int     @id @default(autoincrement())
+  title      String
+  city       String
+  hourlyRate Float
+  status     String  @default("OPEN")
+}
