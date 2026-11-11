@@ -2,6 +2,8 @@ import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Po
 
 import { MissionsService } from './missions.service.js';
 import { Mission } from '../generated/prisma/client.js';
+import { CreateMissionDto } from './create-mission.dto.js';
+import { UpdateMissionDto } from './update-mission.dto.js';
 
 @Controller('missions')
 export class MissionsController {
@@ -13,7 +15,7 @@ export class MissionsController {
     }
 
     @Post()
-    async create(@Body() body: Omit<Mission, 'id' | 'status'>): Promise<Mission> {
+    async create(@Body() body: CreateMissionDto): Promise<Mission> {
         return this.missionsService.create(body);
     }
 
@@ -29,7 +31,7 @@ export class MissionsController {
     }
 
     @Patch(':id')
-    async update(@Param('id', ParseIntPipe) id: number, @Body() body: Partial<Omit<Mission, 'id'>>) : Promise<Mission> {
+    async update(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateMissionDto) : Promise<Mission> {
         return this.missionsService.update(id, body);
     }
 }
