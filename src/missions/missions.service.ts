@@ -1,53 +1,40 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Mission } from './missions.js';
-import { map } from 'rxjs';
+
+import { PrismaService } from '../prisma/prisma.service.js';
+import { Mission } from '../generated/prisma/client.js';
 
 @Injectable()
 export class MissionsService {
-
-    private missions: Mission[] = [  
-        { id: 1, title: 'Serveur', city: 'Aix', hourlyRate: 12.5, status: 'OPEN' },
-        {id: 2, title: 'Interview', city: 'Marseille', hourlyRate: 10.2, status: 'OPEN'},
-    ];
-
-    private nextId = 3;
-
-    findAll(): Mission[]{
-        return this.missions;
+    constructor(private readonly prisma: PrismaService){}
+    
+    async findAll(): Promise<Mission[]> {
+        return this.prisma.mission.findMany();
     }
 
-    create(data: Omit<Mission,'id' | 'status'>): Mission {
-        const mission: Mission = {
-        id: this.nextId,
-        ...data,
-        hourlyRate: data.hourlyRate,
-        status: "OPEN",
-        }
-
-        this.nextId++;
-        this.missions.push(mission)
-        return mission;
+    async create(data: Omit<Mission,'id' | 'status'>):Promise<Mission> {
+        return this.prisma.mission.create({data});
     };
 
-    findOne(id:number): Mission{
-        const mission = this.missions.find((m) => m.id === id);
-        if(!mission){
+    async findOne(id:number): Promise<Mission>{
+        const mission = await this.prisma.mission.findUnique({where: {id}});
+
+        if (!mission){
             throw new NotFoundException(`Mission ${id} not found`);
         }
 
         return mission;
     };
 
-    remove(id:number): void{
-        this.findOne(id);
-        this.missions = this.missions.filter((m) => m.id !== id);
+    
+    async remove(id:number): Promise<void>{
+        await this.findOne(id);
+        await this.prisma.mission.delete({where: {id}});
     }
 
-    update(id: number, data: Partial<Omit<Mission, 'id'>>): Mission {
-        const mission = this.findOne(id);
-        const updated = {...mission, ...data};
-        this.missions = this.missions.map((m) => (m.id === id ? updated : m));
-        return updated;
+    async update(id: number, data: Partial<Omit<Mission, 'id'>>): Promise<Mission> {
+        await this.findOne(id);
+        return this.prisma.mission.update({where: {id}, data});
+    
     }
 
 
